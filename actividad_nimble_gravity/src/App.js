@@ -62,15 +62,16 @@ function App() {
   if (loading) return <div style={{ padding: '20px' }}>Cargando datos de la práctica...</div>;
 
   return (
+    <div className='fondo'>
     <div className='divisor1'>
-      <header className='header1'>
+      <header className='h1'>
         <h1>Challenge de Postulación para Nimble Gravity</h1>
         {candidate && (
           <p>Bienvenido: <strong>{candidate.firstName} {candidate.lastName}</strong> ({candidate.email})</p>
         )}
       </header>
       <section>
-        <h2>Posiciones Abiertas</h2>
+        <h2 className='h2'>Posiciones Abiertas</h2>
         <div className='divisor2'>
           {jobs.map((job) => (
             <div key={job.id} className='divColumna'>
@@ -95,6 +96,7 @@ function App() {
           ))}
         </div>
       </section>
+    </div>
     </div>
   );
 }
