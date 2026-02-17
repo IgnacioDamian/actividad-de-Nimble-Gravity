@@ -4,12 +4,35 @@ import './App.css';
 const BASE_URL = "https://botfilter-h5ddh6dye8exb7ha.centralus-01.azurewebsites.net";
 const EMAIL = "gonzalezignaciodam@gmail.com";
 
-function App() {
+function JobItem({ job, candidate, onApply }) {
+  const [localRepoUrl, setLocalRepoUrl] = useState("");
 
+  return (
+    <div className='divColumna'>
+      <h3 className='h3'>{job.title}</h3>
+      <div className='divInterno'>
+        <input 
+          type="text" 
+          placeholder="URL del repo GitHub"
+          value={localRepoUrl}
+          onChange={(e) => setLocalRepoUrl(e.target.value)}
+          className='input'
+        />
+        <button 
+          onClick={() => onApply(job.id, localRepoUrl)} 
+          className='boton'
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function App() {
   const [candidate, setCandidate] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [repoUrl, setRepoUrl] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,12 +50,12 @@ function App() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  const handleApply = async (jobId) => {
-    if (!repoUrl) {
+
+  const handleApply = async (jobId, urlParaEnviar) => {
+    if (!urlParaEnviar) {
       alert("Por favor, ingresa la URL de tu repositorio de GitHub.");
       return;
     }
@@ -41,9 +64,10 @@ function App() {
       uuid: candidate.uuid,
       jobId: jobId,
       candidateId: candidate.candidateId,
-      repoUrl: repoUrl
+      repoUrl: urlParaEnviar
     };
-      try {
+
+    try {
       const response = await fetch(`${BASE_URL}/api/candidate/apply-to-job`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,51 +76,39 @@ function App() {
 
       const result = await response.json();
       if (result.ok) {
-        alert("¡Postulación enviada con éxito!");
+        alert(`¡Postulación para el puesto ${jobId} enviada con éxito!`);
       }
     } catch (error) {
       alert("Hubo un error al enviar la postulación.");
     }
   };
 
-  if (loading) return <div style={{ padding: '20px' }}>Cargando datos de la práctica...</div>;
+  if (loading) return <div style={{ padding: '20px', color: 'white' }}>Cargando datos de la práctica...</div>;
 
   return (
     <div className='fondo'>
-    <div className='divisor1'>
-      <header className='h1'>
-        <h1>Challenge de Postulación para Nimble Gravity</h1>
-        {candidate && (
-          <p>Bienvenido: <strong>{candidate.firstName} {candidate.lastName}</strong> ({candidate.email})</p>
-        )}
-      </header>
-      <section>
-        <h2 className='h2'>Posiciones Abiertas</h2>
-        <div className='divisor2'>
-          {jobs.map((job) => (
-            <div key={job.id} className='divColumna'>
-              <h3 className='h3'>{job.title}</h3>
-              
-              <div className='divInterno'>
-                <input 
-                  type="text" 
-                  placeholder="URL del repo GitHub"
-                  value={repoUrl}
-                  onChange={(e) => setRepoUrl(e.target.value)}
-                  className='input'
-                />
-                <button 
-                  onClick={() => handleApply(job.id)}
-                  className='boton'
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+      <div className='divisor1'>
+        <header className='h1'>
+          <h1>Challenge de Postulación para Nimble Gravity</h1>
+          {candidate && (
+            <p>Bienvenido: <strong>{candidate.firstName} {candidate.lastName}</strong> ({candidate.email})</p>
+          )}
+        </header>
+        
+        <section>
+          <h2 className='h2'>Posiciones Abiertas</h2>
+          <div className='divisor2'>
+            {jobs.map((job) => (
+              <JobItem 
+                key={job.id} 
+                job={job} 
+                candidate={candidate} 
+                onApply={handleApply} 
+              />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
